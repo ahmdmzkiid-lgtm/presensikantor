@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  password        String?
+  googleId        String?        @unique
+  name            String
+  role            Role           @default(EMPLOYEE)
+  divisionId      String?
+  division        Division?      @relation(fields: [divisionId], references: [id])
+  workScheduleId  String?
+  workSchedule    WorkSchedule?  @relation(fields: [workScheduleId], references: [id])
+  attendances     Attendance[]
+  leaveRequests   LeaveRequest[]
+  dailyReports    DailyReport[]
+  overtimeRequests OvertimeRequest[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+enum Role {
+  EMPLOYEE
+  ADMIN
+  SUPERADMIN
+}
+
+model Attendance {
+  id              String           @id @default(uuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+  checkIn         DateTime?
+  checkOut        DateTime?
+  latCheckIn      Float?
+  longCheckIn     Float?
+  latCheckOut     Float?
+  longCheckOut    Float?
+  photoCheckIn    String?
+  photoCheckOut   String?
+  status          AttendanceStatus @default(ABSENT)
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  SICK
+  LEAVE
+  WFH
+}
+
+model LeaveRequest {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  type            LeaveType
+  startDate       DateTime
+  endDate         DateTime
+  reason          String
+  status          LeaveStatus @default(PENDING)
+  attachment      String?
+  adminNotes      String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+enum LeaveType {
+  LEAVE
+  SICK
+  PERMISSION
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Office {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  latitude  Float
+  longitude Float
+  radius    Int      @default(50) // meters
+  maxLeavePerMonth Int @default(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkSchedule {
+  id             String   @id @default(uuid())
+  name           String
+  startTime      String   // HH:mm
+  endTime        String   // HH:mm
+  breakStartTime String?  // HH:mm
+  breakEndTime   String?  // HH:mm
+  users          User[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Division {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DailyReport {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  date        DateTime @default(now())
+  content     String   @db.Text
+  attachment  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OvertimeRequest {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  date        DateTime
+  startTime   String      // HH:mm
+  endTime     String      // HH:mm
+  duration    Int         // duration in hours
+  reason      String
+  status      LeaveStatus @default(PENDING)
+  adminNotes  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Agenda {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  date        DateTime
+  startTime   String?  // HH:mm
+  endTime     String?  // HH:mm
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
