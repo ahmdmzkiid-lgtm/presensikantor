@@ -32,6 +32,9 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/overtime', overtimeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/agendas', agendaRoutes);
+app.get ('/', (req,res) => {
+  res.send ('Backend presensi kantor API is Running')
+});
 
 // Static files (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
