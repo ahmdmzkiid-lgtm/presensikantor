@@ -8,7 +8,7 @@ async function main() {
   
   const superadmin = await prisma.user.upsert({
     where: { email: 'admin@absensi.com' },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       email: 'admin@absensi.com',
       password: hashedPassword,
@@ -19,7 +19,7 @@ async function main() {
 
   const employee = await prisma.user.upsert({
     where: { email: 'karyawan@absensi.com' },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       email: 'karyawan@absensi.com',
       password: hashedPassword, // same password 'admin123' for testing
